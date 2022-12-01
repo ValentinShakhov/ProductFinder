@@ -15,12 +15,6 @@ public class SalesmanApiStub implements SalesmanApiClient {
 
     private final Collection<Product> products = new ArrayList<>();
 
-    private static Product toProduct(final String productString) {
-        return new Product(Arrays.stream(productString.split(";"))
-                .map(attribute -> attribute.split(":"))
-                .collect(Collectors.toMap(it -> it[0], it -> it[1])));
-    }
-
     @Override
     public Collection<Product> getProducts() {
         return Collections.unmodifiableCollection(products);
@@ -29,8 +23,14 @@ public class SalesmanApiStub implements SalesmanApiClient {
     public void init(final String productsFileName) throws IOException {
         try (final FileReader fileReader = new FileReader(productsFileName)) {
             new BufferedReader(fileReader).lines()
-                    .map(SalesmanApiStub::toProduct)
+                    .map(this::toProduct)
                     .forEach(products::add);
         }
+    }
+
+    private Product toProduct(final String productString) {
+        return new Product(Arrays.stream(productString.split(";"))
+                .map(attribute -> attribute.split(":"))
+                .collect(Collectors.toMap(it -> it[0], it -> it[1])));
     }
 }

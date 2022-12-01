@@ -1,4 +1,4 @@
-package com.assignment.company.util;
+package com.assignment.company.service;
 
 import java.util.Collection;
 
@@ -20,13 +20,13 @@ public class ScoreCalculator {
                 .toList();
         final int matchPercentage = matchedConditions.size() * 100 / allConditions.size();
 
-        return matchPercentage * rule.getScore();
+        return matchPercentage * rule.getScore() / 100;
     }
 
     private boolean matches(final Product product, final Condition condition) {
         final String attributeName = condition.attributeName;
         final String attributeValue = product.getAttributeValue(attributeName);
 
-        return condition.matches(attributeValue);
+        return attributeValue != null && condition.matches(attributeValue);
     }
 }

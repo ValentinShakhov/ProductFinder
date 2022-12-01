@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.assignment.company.client.SalesmanApiClient;
 import com.assignment.company.dto.Product;
-import com.assignment.company.util.ScoreCalculator;
 import com.assignment.company.repository.RuleRepository;
 
 public record ProductService(RuleRepository ruleRepository,

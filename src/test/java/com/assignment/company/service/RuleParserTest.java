@@ -1,10 +1,10 @@
-package com.assignment.company.util;
+package com.assignment.company.service;
 
-import static com.assignment.company.util.RuleParser.AND_OPERATOR;
-import static com.assignment.company.util.RuleParser.BETWEEN_OPERATOR;
-import static com.assignment.company.util.RuleParser.CONDITION_SEPARATOR;
-import static com.assignment.company.util.RuleParser.IN_OPERATOR;
-import static com.assignment.company.util.RuleParser.SCORE_SEPARATOR;
+import static com.assignment.company.service.RuleParser.AND_OPERATOR;
+import static com.assignment.company.service.RuleParser.BETWEEN_OPERATOR;
+import static com.assignment.company.service.RuleParser.CONDITION_SEPARATOR;
+import static com.assignment.company.service.RuleParser.IN_OPERATOR;
+import static com.assignment.company.service.RuleParser.SCORE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 import com.assignment.company.exception.UnableToParseConditionException;
 import com.assignment.company.model.Rule;
 import com.assignment.company.model.condition.BetweenCondition;
+import com.assignment.company.model.condition.EqualCondition;
 import com.assignment.company.model.condition.InCondition;
-import com.assignment.company.model.condition.SimpleCondition;
-import com.assignment.company.util.RuleParser;
+import com.assignment.company.model.condition.LessCondition;
 
 class RuleParserTest {
 
@@ -28,14 +28,12 @@ class RuleParserTest {
         //given
         final String score = "10";
         final String attributeName1 = "attributeName1";
-        final String conditionValue1 = "conditionValue1";
-        final SimpleCondition.Operator operator1 = SimpleCondition.Operator.LESS;
+        final String conditionValue1 = "10.50";
 
         //when
-        final Rule result = ruleParser.toRule(String.format(
-                "%s %s %s %s %s",
+        final Rule result = ruleParser.parse(String.format(
+                "%s < %s %s %s",
                 attributeName1,
-                operator1.sign,
                 conditionValue1,
                 SCORE_SEPARATOR,
                 score
@@ -43,10 +41,9 @@ class RuleParserTest {
 
         //then
         assertThat(result.score()).isEqualTo(Integer.parseInt(score));
-        assertThat(result.conditions()).containsExactly(new SimpleCondition(
+        assertThat(result.conditions()).containsExactly(new LessCondition(
                 attributeName1,
-                conditionValue1,
-                operator1
+                Double.parseDouble(conditionValue1)
         ));
     }
 
@@ -57,16 +54,14 @@ class RuleParserTest {
 
         //when
         assertThatExceptionOfType(UnableToParseConditionException.class)
-                .isThrownBy(() -> {
-                    ruleParser.toRule(String.format(
-                            "%s %s %s %s %s",
-                            "attributeName1",
-                            unknownSign,
-                            "conditionValue1",
-                            SCORE_SEPARATOR,
-                            "10"
-                    ));
-                });
+                .isThrownBy(() -> ruleParser.parse(String.format(
+                        "%s %s %s %s %s",
+                        "attributeName1",
+                        unknownSign,
+                        "conditionValue1",
+                        SCORE_SEPARATOR,
+                        "10"
+                )));
     }
 
     @Test
@@ -74,21 +69,17 @@ class RuleParserTest {
         //given
         final String score = "10";
         final String attributeName1 = "attributeName1";
-        final String conditionValue1 = "conditionValue1";
-        final SimpleCondition.Operator operator1 = SimpleCondition.Operator.LESS;
+        final String conditionValue1 = "10.50";
         final String attributeName2 = "attributeName2";
         final String conditionValue2 = "conditionValue2";
-        final SimpleCondition.Operator operator2 = SimpleCondition.Operator.EQUALS;
         //when
 
-        final Rule result = ruleParser.toRule(String.format(
-                "%s %s %s %s %s %s %s %s %s",
+        final Rule result = ruleParser.parse(String.format(
+                "%s < %s %s %s == %s %s %s",
                 attributeName1,
-                operator1.sign,
                 conditionValue1,
                 CONDITION_SEPARATOR,
                 attributeName2,
-                operator2.sign,
                 conditionValue2,
                 SCORE_SEPARATOR,
                 score
@@ -97,8 +88,8 @@ class RuleParserTest {
         //then
         assertThat(result.score()).isEqualTo(Integer.parseInt(score));
         assertThat(result.conditions()).containsExactlyInAnyOrder(
-                new SimpleCondition(attributeName1, conditionValue1, operator1),
-                new SimpleCondition(attributeName2, conditionValue2, operator2)
+                new LessCondition(attributeName1, Double.parseDouble(conditionValue1)),
+                new EqualCondition(attributeName2, conditionValue2)
         );
     }
 
@@ -107,17 +98,15 @@ class RuleParserTest {
         //given
         final String score = "10";
         final String attributeName1 = "attributeName1";
-        final String conditionValue1 = "conditionValue1";
-        final SimpleCondition.Operator operator1 = SimpleCondition.Operator.LESS;
+        final String conditionValue1 = "10.50";
         final String betweenAttributeName = "betweenAttributeName";
         final String betweenAttributeValue1 = "10.0";
         final String betweenAttributeValue2 = "20.0";
 
         //when
-        final Rule result = ruleParser.toRule(String.format(
-                "%s %s %s %s %s %s %s %s %s %s %s",
+        final Rule result = ruleParser.parse(String.format(
+                "%s < %s %s %s %s %s %s %s %s %s",
                 attributeName1,
-                operator1.sign,
                 conditionValue1,
                 CONDITION_SEPARATOR,
                 betweenAttributeName,
@@ -132,7 +121,7 @@ class RuleParserTest {
         //then
         assertThat(result.score()).isEqualTo(Integer.parseInt(score));
         assertThat(result.conditions()).containsExactlyInAnyOrder(
-                new SimpleCondition(attributeName1, conditionValue1, operator1),
+                new LessCondition(attributeName1, Double.parseDouble(conditionValue1)),
                 new BetweenCondition(
                         betweenAttributeName,
                         Double.parseDouble(betweenAttributeValue1),
@@ -146,22 +135,20 @@ class RuleParserTest {
         //given
         final String score = "10";
         final String attributeName1 = "attributeName1";
-        final String conditionValue1 = "conditionValue1";
-        final SimpleCondition.Operator operator1 = SimpleCondition.Operator.LESS;
+        final String conditionValue1 = "10.50";
         final String inAttributeName = "inAttributeName";
         final String inAttributeValue1 = "inAttributeValue1";
         final String inAttributeValue2 = "inAttributeValue2";
 
         //when
-        final Rule result = ruleParser.toRule(String.format(
-                "%s %s (%s, %s) %s %s %s %s %s %s",
+        final Rule result = ruleParser.parse(String.format(
+                "%s %s (%s, %s) %s %s < %s %s %s",
                 inAttributeName,
                 IN_OPERATOR,
                 inAttributeValue1,
                 inAttributeValue2,
                 CONDITION_SEPARATOR,
                 attributeName1,
-                operator1.sign,
                 conditionValue1,
                 SCORE_SEPARATOR,
                 score
@@ -170,7 +157,7 @@ class RuleParserTest {
         //then
         assertThat(result.score()).isEqualTo(Integer.parseInt(score));
         assertThat(result.conditions()).containsExactlyInAnyOrder(
-                new SimpleCondition(attributeName1, conditionValue1, operator1),
+                new LessCondition(attributeName1, Double.parseDouble(conditionValue1)),
                 new InCondition(inAttributeName, List.of(inAttributeValue1, inAttributeValue2))
         );
     }

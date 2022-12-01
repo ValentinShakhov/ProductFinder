@@ -1,4 +1,4 @@
-package com.assignment.company.util;
+package com.assignment.company.service;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,29 +7,50 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.assignment.company.exception.UnableToParseConditionException;
+import com.assignment.company.model.Rule;
 import com.assignment.company.model.condition.BetweenCondition;
 import com.assignment.company.model.condition.Condition;
-import com.assignment.company.model.Rule;
+import com.assignment.company.model.condition.EqualCondition;
+import com.assignment.company.model.condition.GreaterCondition;
 import com.assignment.company.model.condition.InCondition;
-import com.assignment.company.model.condition.SimpleCondition;
+import com.assignment.company.model.condition.LessCondition;
 
 public class RuleParser {
 
     public static final String CONDITION_SEPARATOR = "&&";
     public static final String SCORE_SEPARATOR = "->";
+    public static final String LESS_OPERATOR = "<";
+    public static final String GREATER_OPERATOR = ">";
+    public static final String EQUAL_OPERATOR = "==";
     public static final String BETWEEN_OPERATOR = "BETWEEN";
     public static final String AND_OPERATOR = "AND";
     public static final String IN_OPERATOR = "IN";
     private static final String ATTRIBUTE_NAME_GROUP = "attributeName";
-    private static final String OPERATOR_GROUP = "operator";
     private static final String ATTRIBUTE_VALUE_GROUP = "attributeValue";
     private static final String ATTRIBUTE_VALUE_FIRST_GROUP = "attributeValueFirst";
     private static final String ATTRIBUTE_VALUE_SECOND_GROUP = "attributeValueSecond";
-    private static final Pattern SIMPLE_CONDITION_PATTERN = Pattern.compile(
+
+    private static final Pattern LESS_CONDITION_PATTERN = Pattern.compile(
             String.format(
-                    "(?<%s>.+)\s(?<%s>[=]{2}|[<,>])\s(?<%s>.+)",
+                    "(?<%s>.+)\s%s\s(?<%s>.+)",
                     ATTRIBUTE_NAME_GROUP,
-                    OPERATOR_GROUP,
+                    LESS_OPERATOR,
+                    ATTRIBUTE_VALUE_GROUP
+            ));
+
+    private static final Pattern GREATER_CONDITION_PATTERN = Pattern.compile(
+            String.format(
+                    "(?<%s>.+)\s%s\s(?<%s>.+)",
+                    ATTRIBUTE_NAME_GROUP,
+                    GREATER_OPERATOR,
+                    ATTRIBUTE_VALUE_GROUP
+            ));
+
+    private static final Pattern EQUAL_CONDITION_PATTERN = Pattern.compile(
+            String.format(
+                    "(?<%s>.+)\s%s\s(?<%s>.+)",
+                    ATTRIBUTE_NAME_GROUP,
+                    EQUAL_OPERATOR,
                     ATTRIBUTE_VALUE_GROUP
             ));
 
@@ -51,7 +72,7 @@ public class RuleParser {
                     ATTRIBUTE_VALUE_GROUP
             ));
 
-    public Rule toRule(final String ruleString) {
+    public Rule parse(final String ruleString) {
         final String[] conditionsAndScore = ruleString.split(" " + SCORE_SEPARATOR + " ");
 
         final String conditionsString = conditionsAndScore[0];
@@ -65,9 +86,19 @@ public class RuleParser {
     }
 
     private Condition toCondition(final String conditionString) {
-        final Optional<Condition> simpleCondition = extractSimpleCondition(conditionString);
-        if (simpleCondition.isPresent()) {
-            return simpleCondition.get();
+        final Optional<Condition> lessCondition = extractLessCondition(conditionString);
+        if (lessCondition.isPresent()) {
+            return lessCondition.get();
+        }
+
+        final Optional<Condition> greaterCondition = extractGreaterCondition(conditionString);
+        if (greaterCondition.isPresent()) {
+            return greaterCondition.get();
+        }
+
+        final Optional<Condition> equalCondition = extractEqualCondition(conditionString);
+        if (equalCondition.isPresent()) {
+            return equalCondition.get();
         }
 
         final Optional<Condition> betweenCondition = extractBetweenCondition(conditionString);
@@ -83,19 +114,40 @@ public class RuleParser {
         throw new UnableToParseConditionException(conditionString);
     }
 
-    private Optional<Condition> extractSimpleCondition(final String conditionString) {
-        final Matcher matcher = SIMPLE_CONDITION_PATTERN.matcher(conditionString);
+    private Optional<Condition> extractLessCondition(final String conditionString) {
+        final Matcher matcher = LESS_CONDITION_PATTERN.matcher(conditionString);
 
         if (matcher.find()) {
             final String attributeName = matcher.group(ATTRIBUTE_NAME_GROUP);
-            final String operator = matcher.group(OPERATOR_GROUP);
             final String attributeValue = matcher.group(ATTRIBUTE_VALUE_GROUP);
 
-            return Optional.of(new SimpleCondition(
-                    attributeName,
-                    attributeValue,
-                    SimpleCondition.Operator.of(operator)
-            ));
+            return Optional.of(new LessCondition(attributeName, Double.parseDouble(attributeValue)));
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<Condition> extractGreaterCondition(final String conditionString) {
+        final Matcher matcher = GREATER_CONDITION_PATTERN.matcher(conditionString);
+
+        if (matcher.find()) {
+            final String attributeName = matcher.group(ATTRIBUTE_NAME_GROUP);
+            final String attributeValue = matcher.group(ATTRIBUTE_VALUE_GROUP);
+
+            return Optional.of(new GreaterCondition(attributeName, Double.parseDouble(attributeValue)));
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<Condition> extractEqualCondition(final String conditionString) {
+        final Matcher matcher = EQUAL_CONDITION_PATTERN.matcher(conditionString);
+
+        if (matcher.find()) {
+            final String attributeName = matcher.group(ATTRIBUTE_NAME_GROUP);
+            final String attributeValue = matcher.group(ATTRIBUTE_VALUE_GROUP);
+
+            return Optional.of(new EqualCondition(attributeName, attributeValue));
         }
 
         return Optional.empty();

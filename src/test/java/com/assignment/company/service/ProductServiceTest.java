@@ -16,8 +16,6 @@ import com.assignment.company.client.SalesmanApiClient;
 import com.assignment.company.dto.Product;
 import com.assignment.company.model.Rule;
 import com.assignment.company.repository.RuleRepository;
-import com.assignment.company.service.ProductService;
-import com.assignment.company.util.ScoreCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {

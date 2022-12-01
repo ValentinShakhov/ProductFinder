@@ -1,4 +1,4 @@
-package com.assignment.company.util;
+package com.assignment.company.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.assignment.company.dto.Product;
 import com.assignment.company.model.Rule;
 import com.assignment.company.model.condition.Condition;
-import com.assignment.company.model.condition.SimpleCondition;
-import com.assignment.company.util.ScoreCalculator;
+import com.assignment.company.model.condition.EqualCondition;
 
 class ScoreCalculatorTest {
 
@@ -28,16 +27,8 @@ class ScoreCalculatorTest {
         final String actualNonMatchingAttributeValue = "value3";
         final int ruleScore = 10;
 
-        final Condition matchingCondition = new SimpleCondition(
-                someAttributeName,
-                matchingAttributeValue,
-                SimpleCondition.Operator.EQUALS
-        );
-        final Condition nonMatchingCondition = new SimpleCondition(
-                otherAttributeName,
-                nonMatchingAttributeValue,
-                SimpleCondition.Operator.EQUALS
-        );
+        final Condition matchingCondition = new EqualCondition(someAttributeName, matchingAttributeValue);
+        final Condition nonMatchingCondition = new EqualCondition(otherAttributeName, nonMatchingAttributeValue);
         final Rule rule = new Rule(List.of(matchingCondition, nonMatchingCondition), ruleScore);
         final Product product = new Product(Map.of(
                 someAttributeName,
@@ -53,7 +44,7 @@ class ScoreCalculatorTest {
         assertThat(result).isEqualTo(List.of(matchingCondition).size() * 100 / List.of(
                 matchingCondition,
                 nonMatchingCondition
-        ).size() * ruleScore);
+        ).size() * ruleScore / 100);
     }
 
     @Test

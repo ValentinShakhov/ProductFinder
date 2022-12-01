@@ -1,12 +1,17 @@
+[Diagram](https://drive.google.com/file/d/1xgsbVfvRP6_y93I47UncsanoHXFWdcUk/view)
+
 ## Execution
 Should be executed under JVM of version 17 or higher
+
+Unpack [files](https://drive.google.com/file/d/1ibGr6swbw05kdq3qk0c47W_lFWHlm78f/view) to a directory, make the directory current, execute JAR
+
 ### Example
-`java -jar build.jar rules.txt products.txt 12000`
+`java -jar build.jar rules.txt products.txt 120`
 ##### Where:
 - `build.jar` - name of executable file
 - `rules.txt` - name of text file with `\n` separated rules
 - `products.txt` - name of text file containing `\n` separated sample products
-- `12000` - minimal satisfying product score
+- `120` - minimal satisfying product score
 ## Assumptions:
  - salesman product list is accessible via some public API
  - salesman API output is small enough to be processed in one go (no pagination required)
@@ -24,3 +29,9 @@ Should be executed under JVM of version 17 or higher
 `attributeName1 < val1 && attributeName2 IN (val2, val3, val4) -> scoreVal`
 #### Product
 `attributeName1:val1;attributeName2:val2`
+
+## Technologies used
+- Java
+- Gradle
+- Mockito
+- JUnit

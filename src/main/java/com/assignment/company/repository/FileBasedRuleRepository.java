@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.assignment.company.model.Rule;
-import com.assignment.company.util.RuleParser;
+import com.assignment.company.service.RuleParser;
 
 public class FileBasedRuleRepository implements RuleRepository {
 
@@ -27,7 +27,7 @@ public class FileBasedRuleRepository implements RuleRepository {
     public void init(final String rulesFileName) throws IOException {
         try (final FileReader fileReader = new FileReader(rulesFileName)) {
             new BufferedReader(fileReader).lines()
-                    .map(ruleParser::toRule)
+                    .map(ruleParser::parse)
                     .forEach(rules::add);
         }
     }

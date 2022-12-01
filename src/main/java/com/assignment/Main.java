@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import com.assignment.company.client.SalesmanApiStub;
 import com.assignment.company.repository.FileBasedRuleRepository;
 import com.assignment.company.service.ProductService;
-import com.assignment.company.util.ScoreCalculator;
-import com.assignment.company.util.RuleParser;
+import com.assignment.company.service.ScoreCalculator;
+import com.assignment.company.service.RuleParser;
 
 public class Main {
 
